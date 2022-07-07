@@ -1,4 +1,5 @@
 ﻿//	Сборка с++17 и выше
+// Консоль при отправке файлов лучше держать в fullscreen
 
 #include <iostream>
 #include <string>
@@ -30,14 +31,13 @@ int main()
 
 	std::cout << "Enter port of server: ";
 Enter_port:
-	std::cin >> port;
-
-	if (std::cin.fail())
+	if (std::cin.get() != '\n')
 	{
-		std::cin.clear();
-		std::cin.ignore(999, '\n');
-		std::cerr << "Invalid value for port! Try again: ";
-		goto Enter_port;
+		std::cin.unget();
+		std::cin >> port;
+
+		if (std::cin.rdbuf()->in_avail())
+			std::cin.ignore(999, '\n');
 	}
 
 Enter_size_bufer:
@@ -48,6 +48,7 @@ Enter_size_bufer:
 		std::cin.unget();
 		std::cin >> size_bufer;
 		size_bufer *= 1024;
+
 		if (std::cin.rdbuf()->in_avail())
 			std::cin.ignore(999, '\n');
 	}

@@ -151,7 +151,7 @@ bool Handler::get_message()
 
 bool Handler::send_file()
 {
-	std::cout << "\n>> Enter name file or directory:\n-> ";
+	std::cout << ">> Enter name file or directory:\n-> ";
 	std::getline(std::cin, this->command);
 
 	if (std::cin.rdbuf()->in_avail())
@@ -215,25 +215,18 @@ bool Handler::send_file()
 	std::cout << "\n~> Send files:";
 
 	int sent_files(0), total_files(files.size());
-	float total_avg_speed(0.0);
-	Mytime timer;
+	Mytime timer, time, timer_for_output;
 	unsigned long long recieved(0);
-
-	bool end = false;
-	std::thread t1([&end, &sent_files, &total_files, &recieved]()
-		{
-			Mytime time;
-			while (!end)
-			{
-				std::cout << "\r~> Files transferred: " << sent_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb/s";
-				Sleep(900);
-			}
-		}
-	);
 
 	for (std::string file : files)
 	{
 		timer.retime();
+
+		if (timer_for_output.get_time() > 0.8)
+		{
+			std::cout << '\r' << "~> Transferred : " << sent_files << " out of " << total_files << ".Avg speed : " << recieved / (double)1024 / 1024 / time.get_time() << " mb / s; (Now sent : " << file << ")\t\t\t\t";
+			timer_for_output.retime();
+		}
 
 		for (int i = 0; i < file.length(); i++)
 		{
@@ -270,16 +263,11 @@ bool Handler::send_file()
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 2 && this->bufer[0] != 0x1 && this->bufer[1] != 0x1) { return false; }
 		
-		total_avg_speed += (any_file.get_size() / (double)1024 / 1024 / timer.get_time());
 		recieved += any_file.get_size();
 		++sent_files;
 	}
 
-	end = true;
-	t1.join();
-	std::cout << "\r~> Files transferred: " << sent_files << " out of " << total_files << ". Avg speed: " << total_avg_speed / sent_files << " mb/s";
-
-	std::cout << "\n^> Files transferred successfully!";
+	std::cout << "\n^> Files transferred successfully! Elapsed: " << time.get_time() << " s";
 
 	return true;
 }
@@ -347,21 +335,8 @@ bool Handler::get_file()
 	std::string namefile;
 	int get_files(0);
 	signed long long file_size(0);
-	float total_avg_speed(0.0);
-	Mytime timer;
+	Mytime timer, time, timer_for_output;
 	unsigned long long recieved(0);
-
-	bool end = false;
-	std::thread t1([&end, &get_files, &total_files, &recieved] ()
-		{
-			Mytime time;
-			while (!end)
-			{
-				std::cout << "\r~> Files transferred: " << get_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb/s";
-				Sleep(900);
-			}
-		}
-	);
 
 	while (total_files != get_files)
 	{
@@ -372,6 +347,12 @@ bool Handler::get_file()
 		if (this->bufer[0] == 0x2) break;
 
 		namefile = std::string(this->bufer, this->length_message);
+
+		if (timer_for_output.get_time() > 0.8)
+		{
+			std::cout << '\r' << "~> Transferred: " << get_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb/s; (Now sent: " << namefile << ")\t\t\t\t";
+			timer_for_output.retime();
+		}
 
 		Any_file any_file(File_system::unite_paths(dir_for_files, namefile).c_str(), Type::output);
 
@@ -401,16 +382,11 @@ bool Handler::get_file()
 		this->bufer[0] = 0x1; this->bufer[1] = 0x1;
 		this->unit->send_to(2);
 
-		total_avg_speed += (any_file.get_size() / (float)1024 / 1024 / timer.get_time());
 		recieved += any_file.get_size();
 		++get_files;
 	}
 
-	end = true;
-	t1.join();
-	std::cout << "\r~> Files transferred: " << get_files << " out of " << total_files << ". Avg speed: " << total_avg_speed / get_files << " mb/s";
-
-	std::cout << "\n^> Files received successfully!";
+	std::cout << "\n^> Files transferred successfully! Elapsed: " << time.get_time() << " s";
 
 	return true;
 }
