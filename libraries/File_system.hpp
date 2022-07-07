@@ -54,11 +54,9 @@ public:
 		return;
 	}
 
-	static bool is_regular_file(const std::string& name)
+	static bool is_directory(const std::string& name)
 	{
-		std::filesystem::path _path(name);
-
-		return _path.has_filename();
+		return std::filesystem::is_directory(name);
 	}
 
 	static std::string get_filename(const std::string& name)
@@ -79,6 +77,8 @@ public:
 	{
 		std::filesystem::path _path(path1);
 
+		if (path1 == "") { _path = File_system::get_work_dir(); }
+
 		_path += std::filesystem::path::preferred_separator;
 		_path += path2;
 
@@ -93,6 +93,11 @@ public:
 	static std::string get_work_dir()
 	{
 		return std::filesystem::current_path().generic_string();
+	}
+
+	static std::string get_separator()
+	{
+		return std::filesystem::path("/").generic_string();
 	}
 
 private:

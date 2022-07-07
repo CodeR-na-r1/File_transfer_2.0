@@ -164,22 +164,22 @@ bool Handler::send_file()
 		return false;
 	}
 
-	std::string sent_obj = this->command;
-
 	this->unit->send_to(2);
 
 	std::cout << "\n~> Data processing...";
 
 	std::vector<std::string> files, dirs;
+	std::string dir_to_obj = File_system::get_dir_without_filename(this->command);
+	std::string main_dir_or_file = File_system::get_filename(this->command);
 
-	if (File_system::is_regular_file(this->command))
+	if (!File_system::is_directory(this->command))
 	{
-		files.push_back(File_system::get_filename(this->command));
-		sent_obj = File_system::get_dir_without_filename(sent_obj);
+		files.push_back(main_dir_or_file);
 	}
 	else
 	{
-		File_system::files_in_dir(this->command, files, dirs);
+		dirs.push_back(main_dir_or_file);
+		File_system::files_in_dir(dir_to_obj, files, dirs, main_dir_or_file + File_system::get_separator());
 	}
 
 	std::cout << "\n~> Waiting response from recipient...";
@@ -221,7 +221,7 @@ bool Handler::send_file()
 			this->bufer[i] = file[i];
 		}
 
-		Any_file any_file((File_system::unite_paths(sent_obj, file)).c_str(), Type::input);
+		Any_file any_file((File_system::unite_paths(dir_to_obj, file)).c_str(), Type::input);
 		if (!any_file.is_open())
 		{
 			std::cout << "\n!> Failed to create file!";
@@ -247,6 +247,7 @@ bool Handler::send_file()
 			if (this->length_message != 1) { return false; }
 		}
 
+		this->unit->send_to(2);
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 2 && this->bufer[0] != 0x1 && this->bufer[1] != 0x1) { return false; }
 	}
@@ -351,6 +352,7 @@ bool Handler::get_file()
 			this->unit->send_to(1);
 		}
 
+		this->length_message = this->unit->receive_from();
 		this->bufer[0] = 0x1; this->bufer[1] = 0x1;
 		this->unit->send_to(2);
 
