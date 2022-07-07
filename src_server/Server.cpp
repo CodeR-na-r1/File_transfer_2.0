@@ -112,7 +112,7 @@ int Server::Stop()
 
 	WSACleanup();
 
-	std::cout << "<-- Server has been successfully stopped -->" << std::endl << std::endl;
+	std::cout << "\n<-- Server has been successfully stopped -->" << std::endl << std::endl;
 
 	return 0;
 }

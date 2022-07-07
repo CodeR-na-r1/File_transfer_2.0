@@ -11,13 +11,23 @@ Handler::Handler(Network_unit* unit, bool state)
 
 bool Handler::do_ransaction()
 {
+
 	return this->state ? this->wait_user_command() : this->wait_request();
 }
 
 bool Handler::wait_user_command()
 {
-	std::cout << "-> ";
-	std::cin >> this->command;
+Enter_command:
+	std::cout << "\n-> ";
+	std::getline(std::cin, this->command);
+
+	if (std::cin.rdbuf()->in_avail())
+		std::cin.ignore(999, '\n');
+
+	if (this->command == "")
+	{
+		goto Enter_command;
+	}
 
 	return this->input_handler();
 }
@@ -38,6 +48,12 @@ bool Handler::input_handler()
 		this->length_message = this->unit->receive_from();
 		return this->length_message == 1 ? this->change_state() : false;
 	}
+	else if (this->command == "--e" || this->command == "exit")
+	{
+		this->bufer[0] = 0x1; this->bufer[1] = 0x3;
+		this->unit->send_to(2);
+		return false;
+	}
 	else
 	{
 		return this->send_message();
@@ -46,11 +62,9 @@ bool Handler::input_handler()
 
 bool Handler::wait_request()
 {
-	std::cout << "Waiting network request...";
+	std::cout << "\n>> Waiting network request...";
 
 	this->length_message = this->unit->receive_from();
-
-	std::cout << "\r";
 
 	return this->request_handler();
 }
@@ -68,6 +82,10 @@ bool Handler::request_handler()
 		{
 			this->unit->send_to(1);
 			return this->get_file();
+		}
+		else if (this->bufer[0] == 0x1 && this->bufer[1] == 0x3)
+		{
+			return false;
 		}
 	}
 
@@ -98,19 +116,18 @@ bool Handler::send_message()
 
 	} while (over_bufer);
 
+	std::cout << ">> (success)";
+
 	return true;
 }
 
 bool Handler::get_message()
 {
 	bool is_end = false;
-	std::cout << ">> ";
+	std::cout << "\n>> ";
 
 	do
 	{
-		this->length_message = this->unit->receive_from();
-		if (this->length_message <= 0) { return false; }
-
 		this->bufer[0] == 0x3 ? is_end = false : is_end = true;
 
 		for (int i = is_end ? 0 : 1; i < this->length_message; i++)
@@ -120,6 +137,12 @@ bool Handler::get_message()
 
 		this->bufer[0] = 0x0;
 		this->unit->send_to(1);
+
+		if (!is_end)
+		{
+			this->length_message = this->unit->receive_from();
+			if (this->length_message <= 0) { return false; }
+		}
 
 	} while (!is_end);
 
@@ -318,5 +341,7 @@ bool Handler::get_file()
 
 bool Handler::change_state()
 {
+	this->state = !this->state;
+
 	return true;
 }

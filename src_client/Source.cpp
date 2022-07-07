@@ -59,10 +59,7 @@ Enter_size_bufer:
 
 	Handler h(client, true);
 	
-	while (true)
-	{
-		h.do_ransaction();
-	}
+	while (h.do_ransaction()) {}
 
 	client->Stop();
 

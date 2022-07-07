@@ -92,7 +92,7 @@ int Client::Stop()
 
 	WSACleanup();
 
-	std::cout << "<-- Client has been successfully disconnected -->" << std::endl << std::endl;
+	std::cout << "\n<-- Client has been successfully disconnected -->" << std::endl << std::endl;
 
 	return 0;
 }
