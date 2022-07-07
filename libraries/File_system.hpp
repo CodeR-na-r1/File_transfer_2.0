@@ -68,6 +68,23 @@ public:
 		return _path.filename().generic_string();
 	}
 
+	static std::string get_dir_without_filename(const std::string& name)
+	{
+		std::filesystem::path _path(name);
+
+		return _path.parent_path().generic_string();
+	}
+
+	static std::string unite_paths(const std::string& path1, const std::string& path2)
+	{
+		std::filesystem::path _path(path1);
+
+		_path += std::filesystem::path::preferred_separator;
+		_path += path2;
+
+		return _path.generic_string();
+	}
+
 	static bool exists(const std::string& name)
 	{
 		return std::filesystem::exists(name);

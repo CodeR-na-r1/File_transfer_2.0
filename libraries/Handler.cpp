@@ -152,7 +152,10 @@ bool Handler::get_message()
 bool Handler::send_file()
 {
 	std::cout << "\n>> Enter name file or directory:\n-> ";
-	std::cin >> this->command;
+	std::getline(std::cin, this->command);
+
+	if (std::cin.rdbuf()->in_avail())
+		std::cin.ignore(999, '\n');
 
 	if (!File_system::exists(this->command))
 	{
@@ -160,6 +163,8 @@ bool Handler::send_file()
 		this->unit->send_to(1);
 		return false;
 	}
+
+	std::string sent_obj = this->command;
 
 	this->unit->send_to(2);
 
@@ -170,6 +175,7 @@ bool Handler::send_file()
 	if (File_system::is_regular_file(this->command))
 	{
 		files.push_back(File_system::get_filename(this->command));
+		sent_obj = File_system::get_dir_without_filename(sent_obj);
 	}
 	else
 	{
@@ -215,7 +221,7 @@ bool Handler::send_file()
 			this->bufer[i] = file[i];
 		}
 
-		Any_file any_file(file.c_str(), Type::input);
+		Any_file any_file((File_system::unite_paths(sent_obj, file)).c_str(), Type::input);
 		if (!any_file.is_open())
 		{
 			std::cout << "\n!> Failed to create file!";
@@ -257,11 +263,26 @@ bool Handler::get_file()
 
 	std::cout << "\n>> Accept a request for a file or directory? (y/n)\n-> ";
 	std::cin >> this->command;
+
+	if (std::cin.rdbuf()->in_avail())
+		std::cin.ignore(999, '\n');
 	
 	if (this->command == "n" || this->command == "no") { this->unit->send_to(1); return false; }
 
 	std::cout << "\n>> Enter the location of the new files (for dir '" << File_system::get_work_dir() << "' click enter)\n-> ";
-	std::cin >> this->command;
+	
+	if (std::cin.get() != '\n')
+	{
+		std::cin.unget();
+		std::getline(std::cin, this->command);
+
+		if (std::cin.rdbuf()->in_avail())
+			std::cin.ignore(999, '\n');
+	}
+	else
+	{
+		this->command = "";
+	}
 
 	if (this->command != "" && !File_system::exists(this->command)) { this->unit->send_to(1); return false; }
 
@@ -270,6 +291,8 @@ bool Handler::get_file()
 	this->unit->send_to(2);
 
 	// ------ Приём мета информации ------
+
+	std::cout << "\n~> Received meta information";
 
 	while (true)
 	{
@@ -284,7 +307,7 @@ bool Handler::get_file()
 
 	this->unit->send_to(2);
 
-	// ------ Приём мета информации ------
+	// ------ Приём информации о размере файла ------
 
 	this->length_message = this->unit->receive_from();
 	if (this->length_message != sizeof(int)) { return false; }
@@ -304,7 +327,7 @@ bool Handler::get_file()
 
 		namefile = std::string(this->bufer, this->length_message);
 
-		Any_file any_file(namefile.c_str(), Type::output);
+		Any_file any_file(File_system::unite_paths(dir_for_files, namefile).c_str(), Type::output);
 
 		if (!any_file.is_open())
 		{
