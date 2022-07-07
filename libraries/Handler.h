@@ -4,9 +4,12 @@
 
 #include <iostream>
 #include <string>
+#include <thread>
+#include <Windows.h>
 
 #include "../libraries/File_system.hpp"
 #include "../libraries/Any_file.h"
+#include "../libraries/Mytime.hpp"
 
 class Handler
 {
