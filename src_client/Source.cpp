@@ -55,12 +55,28 @@ Enter_size_bufer:
 	}
 	
 	Client* client = new Client(ip, port, size_bufer);	// Указываем ip адрес сервера и номер открытого (прослушиваемового) порта сервера
-	
-	client->Start();
+
+	if (client->Start())
+	{
+		std::cerr << "!> Error!";
+		system("pause");
+		return -1;
+	}
 
 	Handler h(client, true);
 	
-	while (h.do_ransaction()) {}
+	try
+	{
+		while (h.do_ransaction()) {}
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << "!> Error! Description: " << e.what();
+	}
+	catch (...)
+	{
+		std::cout << "!> Undefinded error!";
+	}
 
 	client->Stop();
 

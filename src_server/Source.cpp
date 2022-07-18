@@ -55,11 +55,27 @@ Enter_size_bufer:
 
 	Server* server = new Server(ip, port, size_bufer);	// Указываем ip адрес сервера и номер открытого (прослушиваемового) порта сервера
 
-	server->Start();
+	if (server->Start())
+	{
+		std::cerr << "!> Error!";
+		system("pause");
+		return -1;
+	}
 
 	Handler h(server, false);
 
-	while (h.do_ransaction()) {}
+	try
+	{
+		while (h.do_ransaction()) {}
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "!> Error! Description: " << e.what();
+	}
+	catch (...)
+	{
+		std::cerr << "!> Undefinded error!";
+	}
 
 	server->Stop();
 
