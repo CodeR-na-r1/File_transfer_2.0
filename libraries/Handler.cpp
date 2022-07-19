@@ -5,13 +5,13 @@ Handler::Handler(Network_unit* unit, bool state)
 {
 	this->unit = unit;
 	this->bufer = this->unit->get_bufer();
+	this->length_message = 0;
 
 	this->state = state;
 }
 
 bool Handler::do_ransaction()
 {
-
 	return this->state ? this->wait_user_command() : this->wait_request();
 }
 
@@ -267,7 +267,9 @@ bool Handler::send_file()
 		++sent_files;
 	}
 
+	Console_manipulation::set_text_color(Text_color::Green);
 	std::cout << "\n^> Files transferred successfully! Elapsed: " << time.get_time() << " s";
+	Console_manipulation::reset_all();
 
 	return true;
 }
@@ -386,7 +388,9 @@ bool Handler::get_file()
 		++get_files;
 	}
 
+	Console_manipulation::set_text_color(Text_color::Green);
 	std::cout << "\n^> Files transferred successfully! Elapsed: " << time.get_time() << " s";
+	Console_manipulation::reset_all();
 
 	return true;
 }

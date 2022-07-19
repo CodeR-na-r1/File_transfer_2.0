@@ -10,6 +10,8 @@
 #include "../libraries/Any_file.h"
 #include "../libraries/Mytime.hpp"
 
+#include "Console_manipulation.h"
+
 class Handler
 {
 public:

@@ -7,11 +7,25 @@
 #include "Server.h"
 
 #include "../libraries/Handler.h"
+#include "../libraries/Console_manipulation.h"
 
 using namespace Network;
 
 int main()
 {
+	Console_manipulation cm;
+	cm.init();
+
+	std::cout << "Welcome to ";
+
+	cm.set_text_color(Text_color::Green);
+	std::cout << "<< Server >>";
+	cm.reset_all();
+	std::cout << " programm";
+
+	cm.shift_coordinates(-26, 1);
+	std::cout << "by Vlados MRX (v 0.3.1)\n\n";
+
 	std::string ip;
 	int port(8458);		// Значение для порта по умолчанию
 	signed long long int size_bufer(1024 * 2048);	// Значение для размера буфера по умолчанию
@@ -57,7 +71,9 @@ Enter_size_bufer:
 
 	if (server->Start())
 	{
+		cm.set_text_color(Text_color::Red);
 		std::cerr << "!> Error!";
+		cm.reset_all();
 		system("pause");
 		return -1;
 	}
@@ -70,11 +86,15 @@ Enter_size_bufer:
 	}
 	catch (const std::exception& e)
 	{
+		cm.set_text_color(Text_color::Red);
 		std::cerr << "!> Error! Description: " << e.what();
+		cm.reset_all();
 	}
 	catch (...)
 	{
+		cm.set_text_color(Text_color::Red);
 		std::cerr << "!> Undefinded error!";
+		cm.reset_all();
 	}
 
 	server->Stop();
