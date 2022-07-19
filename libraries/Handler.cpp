@@ -246,8 +246,8 @@ bool Handler::send_file()
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 1) { return false; }
 
-		*((signed long long*)this->bufer) = any_file.get_size();
-		this->unit->send_to(sizeof(signed long long));
+		*((unsigned long long*)this->bufer) = any_file.get_size();
+		this->unit->send_to(sizeof(unsigned long long));
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 1) { return false; }
 
@@ -334,7 +334,7 @@ bool Handler::get_file()
 
 	std::string namefile;
 	int get_files(0);
-	signed long long file_size(0);
+	unsigned long long file_size(0);
 	Mytime timer, time, timer_for_output;
 	unsigned long long recieved(0);
 
@@ -366,8 +366,8 @@ bool Handler::get_file()
 		this->unit->send_to(1);
 
 		this->length_message = this->unit->receive_from();
-		if (this->length_message != sizeof(signed long long)) { this->unit->send_to(2); return false; }
-		file_size = *((signed long long*)this->bufer);
+		if (this->length_message != sizeof(unsigned long long)) { this->unit->send_to(2); return false; }
+		file_size = *((unsigned long long*)this->bufer);
 		this->unit->send_to(1);
 
 		while (any_file.get_size() != file_size)

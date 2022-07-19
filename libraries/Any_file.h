@@ -17,17 +17,17 @@ public:
 
 	bool is_open() const;
 
-	signed long long int get_data(char* bufer, const signed long long int size);
+	unsigned long long int get_data(char* bufer, const signed long long int size);
 
 	bool write_data(const char* bufer, const signed long long int size);
 
 	bool eof();
 
-	signed long long int get_pos() const;
+	unsigned long long int get_pos() const;
 
-	void set_pos(const signed long long int position);
+	void set_pos(const unsigned long long int position);
 
-	signed long long int get_size() const;
+	unsigned long long int get_size() const;
 
 	~Any_file();
 
@@ -38,6 +38,6 @@ private:
 
 	std::fstream file;
 	mutable Type type;
-	signed long long int size;
-	signed long long int iterator;
+	unsigned long long int size;
+	unsigned long long int iterator;
 };

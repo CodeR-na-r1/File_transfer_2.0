@@ -35,12 +35,12 @@ bool Any_file::is_open() const
 	return (this->type == Type::error) ? false : true;
 }
 
-signed long long int Any_file::get_data(char* bufer, const signed long long int size)
+unsigned long long int Any_file::get_data(char* bufer, const signed long long int size)
 {
 	if (this->type != Type::input)
 		return 0;
 
-	signed long long int length = ((this->size - this->iterator) <= size) ? this->size - this->iterator : size;
+	unsigned long long int length = ((this->size - this->iterator) <= size) ? this->size - this->iterator : size;
 
 	file.read(bufer, length * sizeof(char));	// Вызываем один раз, так как цена вызова системных вызовов высока
 
@@ -66,19 +66,19 @@ bool Any_file::eof()
 	return (this->size == this->iterator);
 }
 
-signed long long int Any_file::get_pos() const
+unsigned long long int Any_file::get_pos() const
 {
 	return this->iterator;
 }
 
-void Any_file::set_pos(const signed long long int position)
+void Any_file::set_pos(const unsigned long long int position)
 {
 	this->iterator = position;
 
 	return;
 }
 
-signed long long int Any_file::get_size() const
+unsigned long long int Any_file::get_size() const
 {
 	return this->size;
 }
