@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <iostream>
+#include <iomanip>
+
 #include <string>
 
 #include <Windows.h>
@@ -54,6 +56,8 @@ public:
 	void show_cursor();
 
 	static void reset_all();
+
+	void clear_row();
 
 	static void set_text_state(const Text_state t_state);
 

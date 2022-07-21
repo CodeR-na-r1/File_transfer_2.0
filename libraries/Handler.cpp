@@ -212,7 +212,10 @@ bool Handler::send_file()
 	this->length_message = this->unit->receive_from();
 	if (this->length_message != 3) { return false; }
 
-	std::cout << "\n~> Send files:";
+	std::cout << "\n~> Send files:\n";
+
+	Console_manipulation cm1, cm2;
+	cm1.init();
 
 	int sent_files(0), total_files(files.size());
 	Mytime timer, time, timer_for_output;
@@ -224,7 +227,18 @@ bool Handler::send_file()
 
 		if (timer_for_output.get_time() > 0.8)
 		{
-			std::cout << '\r' << "~> Transferred : " << sent_files << " out of " << total_files << ".Avg speed : " << recieved / (double)1024 / 1024 / time.get_time() << " mb / s; (Now sent : " << file << ")\t\t\t\t";
+			cm1.load_saved_cursor_pos();
+			cm1.clear_row();
+			std::cout << "~> Transferred : " << sent_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb / s;";
+			cm1.save_now_cursor_pos();
+
+			std::cout << '\n';
+
+			cm2.load_saved_cursor_pos();
+			cm2.clear_row();
+			std::cout << "Now sent: " << file;
+			cm2.save_now_cursor_pos();
+
 			timer_for_output.retime();
 		}
 
@@ -251,17 +265,23 @@ bool Handler::send_file()
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 1) { return false; }
 
+		int gulp_messages = 3, counter_messages_gulp = 0;
 		while ((this->length_message = any_file.get_data(this->bufer, this->unit->get_size_bufer())) > 0)
 		{
 			this->unit->send_to(this->length_message);
 
-			this->length_message = this->unit->receive_from();
-			if (this->length_message != 1) { return false; }
+			if (counter_messages_gulp >= gulp_messages)
+			{
+				this->length_message = this->unit->receive_from();
+				if (this->length_message != 1) { return false; }
+				counter_messages_gulp = 0;
+			}
+			++counter_messages_gulp;
 		}
 
-		this->unit->send_to(2);
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 2 && this->bufer[0] != 0x1 && this->bufer[1] != 0x1) { return false; }
+		this->unit->send_to(2);
 		
 		recieved += any_file.get_size();
 		++sent_files;
@@ -332,7 +352,10 @@ bool Handler::get_file()
 	int total_files = *((int*)this->bufer);
 	this->unit->send_to(3);
 
-	std::cout << "\n~> Will be received " << total_files << " files";
+	std::cout << "\n~> Will be received " << total_files << " files\n";
+
+	Console_manipulation cm1, cm2;
+	cm1.init();
 
 	std::string namefile;
 	int get_files(0);
@@ -352,7 +375,18 @@ bool Handler::get_file()
 
 		if (timer_for_output.get_time() > 0.8)
 		{
-			std::cout << '\r' << "~> Transferred: " << get_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb/s; (Now sent: " << namefile << ")\t\t\t\t";
+			cm1.load_saved_cursor_pos();
+			cm1.clear_row();
+			std::cout << "~> Transferred: " << get_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb/s;";
+			cm1.save_now_cursor_pos();
+
+			std::cout << '\n';
+
+			cm2.load_saved_cursor_pos();
+			cm2.clear_row();
+			std::cout << "Now sent: " << namefile;
+			cm2.save_now_cursor_pos();
+
 			timer_for_output.retime();
 		}
 
@@ -372,17 +406,23 @@ bool Handler::get_file()
 		file_size = *((unsigned long long*)this->bufer);
 		this->unit->send_to(1);
 
+		int gulp_messages = 3, counter_messages_gulp = 0;
 		while (any_file.get_size() != file_size)
 		{
 			this->length_message = this->unit->receive_from();
 			any_file.write_data(this->bufer, this->length_message);
 
-			this->unit->send_to(1);
+			if (counter_messages_gulp >= gulp_messages)
+			{
+				this->unit->send_to(1);
+				counter_messages_gulp = 0;
+			}
+			++counter_messages_gulp;
 		}
 
-		this->length_message = this->unit->receive_from();
 		this->bufer[0] = 0x1; this->bufer[1] = 0x1;
 		this->unit->send_to(2);
+		this->length_message = this->unit->receive_from();
 
 		recieved += any_file.get_size();
 		++get_files;

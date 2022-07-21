@@ -62,6 +62,19 @@ void Console_manipulation::reset_all()
 	std::cout << "\x1b[0m";
 }
 
+void Console_manipulation::clear_row()
+{
+	GetConsoleScreenBufferInfo(this->hWnd, &this->bufer_info);
+
+	int row_length = this->bufer_info.dwCursorPosition.X;
+
+	this->set_cursor_pos(0, this->bufer_info.dwCursorPosition.Y);
+
+	std::cout << std::setfill(' ') << std::setw(row_length) << ' ';
+	
+	this->set_cursor_pos(0, this->bufer_info.dwCursorPosition.Y);
+}
+
 void Console_manipulation::set_text_state(const Text_state t_state)
 {
 	std::cout << "\x1b[" + std::to_string(static_cast<int>(t_state)) + "m";
