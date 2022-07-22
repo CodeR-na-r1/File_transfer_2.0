@@ -72,7 +72,7 @@ Enter_size_bufer:
 	if (server->Start())
 	{
 		cm.set_text_color(Text_color::Red);
-		std::cerr << "!> Error!";
+		std::cerr << "!> Error with start server!";
 		cm.reset_all();
 		system("pause");
 		return -1;

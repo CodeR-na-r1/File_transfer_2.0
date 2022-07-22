@@ -218,14 +218,12 @@ bool Handler::send_file()
 	cm1.init();
 
 	int sent_files(0), total_files(files.size());
-	Mytime timer, time, timer_for_output;
+	Mytime time, timer_for_output;
 	unsigned long long recieved(0);
 
 	for (std::string file : files)
 	{
-		timer.retime();
-
-		if (timer_for_output.get_time() > 0.8)
+		if (1)//timer_for_output.get_time() > 0.8)
 		{
 			cm1.load_saved_cursor_pos();
 			cm1.clear_row();
@@ -250,7 +248,7 @@ bool Handler::send_file()
 		Any_file any_file((File_system::unite_paths(dir_to_obj, file)).c_str(), Type::input);
 		if (!any_file.is_open())
 		{
-			std::cout << "\n!> Failed to create file!";
+			std::cout << "\n!> Failed to open file!";
 			this->bufer[0] = 0x2;
 			this->unit->send_to(1);
 			return false;
@@ -265,23 +263,13 @@ bool Handler::send_file()
 		this->length_message = this->unit->receive_from();
 		if (this->length_message != 1) { return false; }
 
-		int gulp_messages = 3, counter_messages_gulp = 0;
 		while ((this->length_message = any_file.get_data(this->bufer, this->unit->get_size_bufer())) > 0)
 		{
 			this->unit->send_to(this->length_message);
 
-			if (counter_messages_gulp >= gulp_messages)
-			{
-				this->length_message = this->unit->receive_from();
-				if (this->length_message != 1) { return false; }
-				counter_messages_gulp = 0;
-			}
-			++counter_messages_gulp;
+			this->length_message = this->unit->receive_from();
+			if (this->length_message != 1) { return false; }
 		}
-
-		this->length_message = this->unit->receive_from();
-		if (this->length_message != 2 && this->bufer[0] != 0x1 && this->bufer[1] != 0x1) { return false; }
-		this->unit->send_to(2);
 		
 		recieved += any_file.get_size();
 		++sent_files;
@@ -360,20 +348,18 @@ bool Handler::get_file()
 	std::string namefile;
 	int get_files(0);
 	unsigned long long file_size(0);
-	Mytime timer, time, timer_for_output;
+	Mytime time, timer_for_output;
 	unsigned long long recieved(0);
 
 	while (total_files != get_files)
 	{
-		timer.retime();
-
 		this->length_message = this->unit->receive_from();
 
 		if (this->bufer[0] == 0x2) break;
 
 		namefile = std::string(this->bufer, this->length_message);
 
-		if (timer_for_output.get_time() > 0.8)
+		if (true)//timer_for_output.get_time() > 0.8)
 		{
 			cm1.load_saved_cursor_pos();
 			cm1.clear_row();
@@ -406,23 +392,13 @@ bool Handler::get_file()
 		file_size = *((unsigned long long*)this->bufer);
 		this->unit->send_to(1);
 
-		int gulp_messages = 3, counter_messages_gulp = 0;
 		while (any_file.get_size() != file_size)
 		{
 			this->length_message = this->unit->receive_from();
 			any_file.write_data(this->bufer, this->length_message);
 
-			if (counter_messages_gulp >= gulp_messages)
-			{
-				this->unit->send_to(1);
-				counter_messages_gulp = 0;
-			}
-			++counter_messages_gulp;
+			this->unit->send_to(1);
 		}
-
-		this->bufer[0] = 0x1; this->bufer[1] = 0x1;
-		this->unit->send_to(2);
-		this->length_message = this->unit->receive_from();
 
 		recieved += any_file.get_size();
 		++get_files;
