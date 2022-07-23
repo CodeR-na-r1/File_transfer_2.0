@@ -6,6 +6,9 @@
 #include <string>
 #include <Windows.h>
 
+#include <thread>
+#include <atomic>
+
 #include "../libraries/File_system.hpp"
 #include "../libraries/Any_file.h"
 #include "../libraries/Mytime.hpp"

@@ -24,7 +24,7 @@ int main()
 	std::cout << " programm";
 
 	cm.shift_coordinates(-26, 1);
-	std::cout << "by Vlados MRX (v 0.3.1)\n\n";
+	std::cout << "by Vlados MRX (v 0.4.1)\n\n";
 
 	std::string ip;
 	int port(8458);		// Значение для порта по умолчанию

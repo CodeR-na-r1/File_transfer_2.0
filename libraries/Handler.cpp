@@ -214,32 +214,43 @@ bool Handler::send_file()
 
 	std::cout << "\n~> Send files:\n";
 
-	Console_manipulation cm1, cm2;
-	cm1.init();
+	std::atomic<int> sent_files(0);
+	int total_files(files.size());
+	Mytime time;
+	std::atomic<unsigned long long> recieved(0);
+	unsigned long long total_files_size = File_system::size_dir(File_system::unite_paths(dir_to_obj, main_dir_or_file));
+	std::atomic<bool> is_end(false);
 
-	int sent_files(0), total_files(files.size());
-	Mytime time, timer_for_output;
-	unsigned long long recieved(0);
+	std::thread t1([&is_end, &sent_files, &total_files, &recieved, &total_files_size, &time]()
+		{
+			Console_manipulation cm1, cm2;
+			Console_show_loading loading(0, total_files_size, 20);
+			cm1.init();
+			while (true)
+			{
+				cm1.load_saved_cursor_pos();
+				cm1.clear_row();
+				std::cout << "~> Transferred : " << sent_files.load(std::memory_order_relaxed) << " out of " << total_files << ". Avg speed: " << recieved.load(std::memory_order_relaxed) / (double)1024 / 1024 / time.get_time() << " mb / s;";
+				cm1.save_now_cursor_pos();
+
+				std::cout << '\n';
+
+				cm2.load_saved_cursor_pos();
+				cm2.clear_row();
+				loading.show_loading(recieved.load(std::memory_order_relaxed));
+				cm2.save_now_cursor_pos();
+
+				if (is_end) { break; }
+
+				Sleep(800);
+			}
+			
+			std::cout << '\n';
+		}
+	);
 
 	for (std::string file : files)
 	{
-		if (1)//timer_for_output.get_time() > 0.8)
-		{
-			cm1.load_saved_cursor_pos();
-			cm1.clear_row();
-			std::cout << "~> Transferred : " << sent_files << " out of " << total_files << ". Avg speed: " << recieved / (double)1024 / 1024 / time.get_time() << " mb / s;";
-			cm1.save_now_cursor_pos();
-
-			std::cout << '\n';
-
-			cm2.load_saved_cursor_pos();
-			cm2.clear_row();
-			std::cout << "Now sent: " << file;
-			cm2.save_now_cursor_pos();
-
-			timer_for_output.retime();
-		}
-
 		for (int i = 0; i < file.length(); i++)
 		{
 			this->bufer[i] = file[i];
@@ -266,14 +277,17 @@ bool Handler::send_file()
 		while ((this->length_message = any_file.get_data(this->bufer, this->unit->get_size_bufer())) > 0)
 		{
 			this->unit->send_to(this->length_message);
+			recieved.fetch_add(this->length_message, std::memory_order_relaxed);
 
 			this->length_message = this->unit->receive_from();
 			if (this->length_message != 1) { return false; }
 		}
 		
-		recieved += any_file.get_size();
-		++sent_files;
+		sent_files.fetch_add(1, std::memory_order_relaxed);
 	}
+
+	is_end.store(true, std::memory_order_relaxed);
+	t1.join();
 
 	Console_manipulation::set_text_color(Text_color::Green);
 	std::cout << "\n^> Files transferred successfully! Elapsed: " << time.get_time() << " s";

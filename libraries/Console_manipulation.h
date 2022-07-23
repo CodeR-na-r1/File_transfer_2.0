@@ -94,3 +94,22 @@ private:
 	COORD saved_bufferConsole;
 	bool is_saved_coord;
 };
+
+class Console_show_loading
+{
+public:
+
+	Console_show_loading(unsigned long long start_value, unsigned long long finish_value);
+	Console_show_loading(unsigned long long start_value, unsigned long long finish_value, unsigned long long max_quantity_divisions);
+	Console_show_loading(unsigned long long start_value, unsigned long long finish_value, char filler, unsigned long long max_quantity_divisions);
+	Console_show_loading(unsigned long long start_value, unsigned long long finish_value, char filler, unsigned long long max_quantity_divisions, Text_color color);
+
+	void show_loading(const unsigned long long now_value) const;
+
+private:
+
+	unsigned long long start_value, finish_value;
+	unsigned long long max_quantity_divisions;
+	Text_color color;
+	char filler;
+};

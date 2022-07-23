@@ -23,6 +23,18 @@ public:
 		return;
 	}
 
+	static unsigned long long size_dir(const std::string directory)
+	{
+		unsigned long long files_size = 0;
+		for (const auto& it : std::filesystem::recursive_directory_iterator(directory))
+		{
+			if (it.is_regular_file())
+				files_size += it.file_size();
+		}
+
+		return files_size;
+	}
+
 	static void create_dirs(const std::string& path_where, const std::vector<std::string>& dirs)
 	{
 		std::filesystem::path _path = path_where;
