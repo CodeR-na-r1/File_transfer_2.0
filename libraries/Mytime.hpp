@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include <iostream>
 #include <chrono>
@@ -10,20 +10,20 @@ private:
 	std::chrono::duration<float> duration;
 
 public:
-	Mytime() {	// Инициализация счётчика времени + старт отсчёта
+	Mytime() {	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃС‡С‘С‚С‡РёРєР° РІСЂРµРјРµРЅРё + СЃС‚Р°СЂС‚ РѕС‚СЃС‡С‘С‚Р°
 		start = std::chrono::high_resolution_clock::now();
 	}
 
-	void retime() { start = std::chrono::high_resolution_clock::now(); }	// Сброс счётчика времени
+	void retime() { start = std::chrono::high_resolution_clock::now(); }	// РЎР±СЂРѕСЃ СЃС‡С‘С‚С‡РёРєР° РІСЂРµРјРµРЅРё
 
-	void output_time()	// Выввод в консоль
+	void output_time()	// Р’С‹РІРІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ
 	{
 		end = std::chrono::high_resolution_clock::now();
 		duration = end - start;
 		std::cout << "Time is code = " << duration.count() << "s" << std::endl;
 	}
 
-	float get_time()	// Получение значения
+	float get_time()	// РџРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ
 	{
 		end = std::chrono::high_resolution_clock::now();
 		duration = end - start;
